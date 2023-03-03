@@ -1,5 +1,3 @@
 # ¿ Qué son endpoints ?
 
-[Enlace de endopoints](https://www.icm.es/2021/06/15/que-son-endpoints/)
-
-Simplemente leer el enlace que está muy bien explicado.
+[Muy bien explicado muy largo para escribirlo por acá pero está muy bien explicado](https://es.stackoverflow.com/questions/51758/qu%C3%A9-es-un-entry-point-y-un-end-point)
