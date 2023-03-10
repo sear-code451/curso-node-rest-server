@@ -6,41 +6,48 @@ const Usuario = require( '../models/usuario' );
 
 // Procedimiento
 
-const usuariosGet = (req = request, res = response ) => {
+const usuariosGet = async(req = request, res = response ) => {
 
-    const { nombre = 'not name', apikey = 'Sin apikey', page = '1', limit } = req.query;
+    const { limite = 5, desde = 0 } = req.query;
+    const query = { estado:true };
 
+    const [ total, usuarios ] = await Promise.all( [
+
+        Usuario.countDocuments( query ),        
+        Usuario.find( query )
+            .skip( desde )
+            .limit( limite )
+    ] );
+
+    
     res.json( {
-        msg: 'get API - controllers',
-        page,
-        nombre,
-        apikey,
-        limit
-    });
+        total,
+        usuarios
+    } );
 };
 
-const usuariosPut = (req, res) => {
+const usuariosPut = async(req, res) => {
 
     const { id } = req.params;
+    const { _id ,password, google, correo, ...resto } = req.body;
 
-    res.json( {
-        msg: 'put API - Controllers',
-        id
-    });
+    // console.log( req.body );
+
+    // TODO: validar contra la base de datos
+    if( password ) {
+        const salt = bcryptjs.genSaltSync();
+        resto.password = bcryptjs.hashSync( password, salt );
+    }
+
+    const usuario = await Usuario.findByIdAndUpdate( id, resto, {new: true} );
+
+    res.json( usuario );
 };
 
 const usuariosPost = async (req, res) => {
 
     const { nombre, correo, password, rol } = req.body;
-    const usuario = new Usuario( { nombre, correo, password, rol } );
-
-    // Verificar si el correo existe
-    const existeEmail = await Usuario.findOne({ correo });
-    if( existeEmail ) {
-        return res.status(400).json({
-            msg: 'El correo ya fue registrado anteriormente'
-        });
-    }
+    const usuario = new Usuario( { nombre, correo, password, rol } );    
 
     // Encriptar la contraseña
     const salt = bcryptjs.genSaltSync();
@@ -50,15 +57,18 @@ const usuariosPost = async (req, res) => {
     await usuario.save();
 
     res.json( {
-        msg: 'post API - controllers',
         usuario
     });
 };
 
-const usuariosDelete = (req, res) => {
-    res.json( {
-        msg: 'delete API - controllers'
-    });
+const usuariosDelete = async(req, res) => {
+
+    const { id } = req.params;
+
+    // Físicamente lo borramos
+    const usuario = await Usuario.findByIdAndUpdate(id, { estado:false })
+
+    res.json( usuario );
 };
 
 const usuariosPath = (req, res) => {
